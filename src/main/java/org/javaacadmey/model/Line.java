@@ -2,8 +2,6 @@ package org.javaacadmey.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
 import org.javaacadmey.exception.StationException;
 
 public class Line {
@@ -36,16 +34,7 @@ public class Line {
         return stations.get(stations.size() - 1);
     }
 
-    public Station getStationByName(String nameStation) {
-        Station station = getNotExistedStation(nameStation);
-        if (station == null) {
-            throw new StationException("Station with name " + nameStation
-                    + " not found in this metro.");
-        }
-        return station;
-    }
-
-    public boolean checkExistedStation(String nameStation) {
+    public boolean checkExistedStation(final String nameStation) {
         for (Station station : stations) {
             if (station.getName().equals(nameStation)) {
                 return true;
@@ -54,7 +43,7 @@ public class Line {
         return false;
     }
 
-    private Station getNotExistedStation(String nameStation) {
+    private Station getNotExistedStation(final String nameStation) {
         for (Station station : stations) {
             if (station.getName().equals(nameStation)) {
                 return station;

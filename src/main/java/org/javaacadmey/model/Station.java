@@ -1,9 +1,8 @@
 package org.javaacadmey.model;
 
-import org.javaacadmey.exception.TicketsException;
-
 import java.time.Duration;
 import java.time.LocalDate;
+import org.javaacadmey.exception.TicketsException;
 
 public class Station {
 
@@ -86,7 +85,8 @@ public class Station {
         this.changeLine = changeLine;
     }
 
-    public void sellingTicket(final LocalDate date, final Station startStation, final Station finalStation) {
+    public void sellingTicket(final LocalDate date,
+                              final Station startStation, final Station finalStation) {
         if (!metro.isStationInAllLines(startStation.getName())
                 && !metro.isStationInAllLines(finalStation.getName())) {
             throw new TicketsException("Ошибка. Одной или обоих станция не существует: "
@@ -96,8 +96,12 @@ public class Station {
         ticketOffice.sellTicket(date, metro.getGlobalCountStages(startStation, finalStation));
     }
 
-    public void sellSeasonTickets(LocalDate localDate) {
+    public void sellSeasonTickets(final LocalDate date) {
+        ticketOffice.sellSeasonTickets(metro.generateSeasonTicket(), date, metro);
+    }
 
+    public void updateSeasonTickets(final String number, final LocalDate date) {
+        ticketOffice.sellSeasonTickets(number, date, metro);
     }
 
     @Override
@@ -111,8 +115,12 @@ public class Station {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Station station = (Station) o;
 

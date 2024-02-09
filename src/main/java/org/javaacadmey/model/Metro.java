@@ -1,27 +1,35 @@
 package org.javaacadmey.model;
 
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import org.javaacadmey.exception.LineException;
+import org.javaacadmey.exception.MetroException;
 import org.javaacadmey.exception.StationException;
 import org.javaacadmey.exception.TicketsException;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class Metro {
     private final String cityName;
     private final List<Line> lines = new ArrayList<>();
 
     private final Tickets tickets;
+    private static int LIMIT = 10000;
 
-    private static int countSeasonTickets = 0;
-    private static int LIMIT = 9999;
+    private final Map<String, LocalDate> seasonsTicketsMap = new HashMap<>();
 
-    private static List<String> list;
+    private static final Queue<String> listSeasonTickets;
 
     static {
-        for ()
+        listSeasonTickets = new LinkedList<>();
+        for (int i = 1; i < LIMIT; i++) {
+            listSeasonTickets.add(String.format("a%04d", i));
+        }
     }
 
     public Metro(String cityName) {
@@ -29,17 +37,47 @@ public class Metro {
         this.tickets = new Tickets();
     }
 
-    public void createLine(String inputNameLine) {
+    public Map<String, LocalDate> getSeasonsTicketsMap() {
+        return seasonsTicketsMap;
+    }
+
+    public boolean checkSeasonsTicketsMap(final String number, final LocalDate dateCheck) {
+        LocalDate finishDateSeasonsTickets = seasonsTicketsMap.get(number);
+        if (finishDateSeasonsTickets == null) {
+            throw new MetroException("Произошла ошибка. Абонемент с номером: '"
+                    + number + "' не найден.");
+        } else {
+            return dateCheck.isBefore(finishDateSeasonsTickets.plusDays(1))
+                    && dateCheck.isAfter(LocalDate.now().minusDays(1));
+        }
+    }
+
+    public void printTotalIncome() {
+        Map<LocalDate, BigInteger> totalIncomeMap = new HashMap<>();
+        for (Line line : lines) {
+            for (Station station : line.getListStation()) {
+                for (Map.Entry<LocalDate, BigInteger> entry
+                        : station.getTicketOffice().getAllTicketMap().entrySet()) {
+                    if (totalIncomeMap.putIfAbsent(entry.getKey(), entry.getValue()) != null) {
+                        totalIncomeMap.merge(entry.getKey(), entry.getValue(), BigInteger::add);
+                    }
+                }
+            }
+        }
+        System.out.println(totalIncomeMap);
+    }
+
+    public void createLine(final String inputNameLine) {
         String nameLine = getFormatNameLine(inputNameLine);
         if (!checkExistedLine(nameLine)) {
             lines.add(new Line(this, nameLine));
         }
     }
 
-    private boolean checkExistedLine(String nameLine) {
+    private boolean checkExistedLine(final String nameLine) {
         for (Line line : lines) {
             if (line.getName().equals(nameLine)) {
-                throw new LineException("Line with name " + nameLine + " already exists.");
+                throw new LineException("Линия с именем " + nameLine + " уже существует.");
             }
         }
         return false;
@@ -54,46 +92,44 @@ public class Metro {
         return inputName.substring(0, 1).toUpperCase() + inputName.substring(1).toLowerCase();
     }
 
-    public void createFirstStationInLine(String nameLine, String stationName,
+    public void createFirstStationInLine(final String nameLine, final String stationName,
                                          List<Station> changeStation) {
         Line line = getLineByName(nameLine);
         if (!isLineEmpty(line)) {
-            throw new LineException("Error created first station in line: "
-                    + line.getName() + ". Line is not empty.");
+            throw new StationException("Ошибка создания первой станции. "
+                    + line.getName() + ". Линия не пустая.");
         } else if (!isStationInAllLines(stationName)) {
             line.getListStation().add(new Station(this, stationName, line));
         }
     }
 
-    public void createFirstStationInLine(String nameLine, String stationName) {
+    public void createFirstStationInLine(final String nameLine, final String stationName) {
         Line line = getLineByName(nameLine);
         if (!isLineEmpty(line)) {
-            throw new LineException("Error created first station in line: "
-                    + line.getName() + ". Line is not empty.");
+            throw new StationException("Ошибка создания первой станции. "
+                    + line.getName() + ". Линия не пустая.");
         } else if (!isStationInAllLines(stationName)) {
             line.getListStation().add(new Station(this, stationName, line));
         }
     }
 
-    //проверили, существует ли станция с таким именем уже
-    public boolean isStationInAllLines(String nameStation) {
+    public boolean isStationInAllLines(final String nameStation) {
         for (Line line : lines) {
             if (line.checkExistedStation(nameStation)) {
                 return true;
-                //throw new LineException("Station with name " + nameStation + " already exists.");
             }
         }
         return false;
     }
 
-    private boolean isLineEmpty(Line line) {
+    private boolean isLineEmpty(final Line line) {
         return line.getListStation().isEmpty();
     }
 
     /**
      * return Line by name
      */
-    public Line getLineByName(String nameLine) {
+    public Line getLineByName(final String nameLine) {
         return getNotExistedLine(getFormatNameLine(nameLine));
     }
 
@@ -102,7 +138,7 @@ public class Metro {
      * if station not found get LinException
      * if station found @return line
      */
-    private Line getNotExistedLine(String nameLine) {
+    private Line getNotExistedLine(final String nameLine) {
         for (Line item : lines) {
             if (item.getName().equals(nameLine)) {
                 return item;
@@ -111,11 +147,11 @@ public class Metro {
         throw new LineException("Линия метро " + nameLine + " не найдена в метро.");
     }
 
-    public void createLastStationInLine(String nameLine, String nameStation,
+    public void createLastStationInLine(final String nameLine, final String nameStation,
                                         Duration timeFromLastStation, Line changeLine) {
         Line line = getLineByName(nameLine);
         if (isStationInAllLines(nameStation)) {
-            throw new LineException("Station with name " + nameStation + " already exists.");
+            throw new LineException("Станция с именем " + nameStation + " уже существует.");
         } else if (!timeFromLastStation.isNegative()
                 && line.getLastStation() != null
                 && line.getLastStation().getNextStation() == null
@@ -127,12 +163,12 @@ public class Metro {
             lastStation.setNextStation(station);
             lastStation.setTimeFromNextStation(timeFromLastStation);
         } else {
-            throw new StationException("Error creat last station with name: "
+            throw new StationException("Ошибка создания конечной станции с именем: "
                     + nameStation);
         }
     }
 
-    public void createLastStationInLine(String nameLine, String nameStation,
+    public void createLastStationInLine(final String nameLine, final String nameStation,
                                         Duration timeFromLastStation) {
         Line line = getLineByName(nameLine);
         if (isStationInAllLines(nameStation)) {
@@ -152,24 +188,16 @@ public class Metro {
         }
     }
 
-    public void createSubwayCrossing(String nameLine1, String nameStation1,
-                                     String nameLine2, String nameStation2) {
-        Line line1 = getLineByName(nameLine1);
-        Station station1 = line1.getStationByName(nameStation1);
-        Line line2 = getLineByName(nameLine2);
-        Station station2 = line2.getStationByName(nameStation2);
-        station1.setChangeLine(line2);
-        station2.setChangeLine(line1);
-    }
-
     public int getGlobalCountStages(final Station startStation, final Station finalStation) {
-        if (!isStationInAllLines(startStation.getName()) && !isStationInAllLines(startStation.getName())) {
+        if (!isStationInAllLines(startStation.getName())
+                && !isStationInAllLines(startStation.getName())) {
             throw new TicketsException("Ошибка. Одна или несколько станций не существует");
         }
         if (isOneLine(startStation, finalStation)) {
             return tickets.countStages(startStation, finalStation);
         } else {
-            Station changeStation = tickets.getTransferStation(startStation.getLine(), finalStation.getLine());
+            Station changeStation = tickets.getTransferStation(startStation.getLine(),
+                    finalStation.getLine());
             int count = tickets.countStages(startStation, changeStation);
             Line line = changeStation.getChangeLine();
             changeStation = tickets.getTransferStation(line, startStation.getLine());
@@ -178,12 +206,17 @@ public class Metro {
         }
     }
 
-    private boolean isOneLine(Station station1, Station station2) {
+    private boolean isOneLine(final Station station1, final Station station2) {
         return station1.getLine().equals(station2.getLine());
     }
 
-    public static String generateSeasonTicket() {
 
+    public String generateSeasonTicket() {
+        String result = listSeasonTickets.poll();
+        if (result == null) {
+            throw new TicketsException("Абонементы закончились, продажа невозможна");
+        }
+        return result;
     }
 
     @Override

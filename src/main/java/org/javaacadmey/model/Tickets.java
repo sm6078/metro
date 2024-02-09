@@ -5,7 +5,7 @@ import org.javaacadmey.exception.TicketsException;
 
 public class Tickets {
 
-    public Station getTransferStation(Line lineIn, Line lineOut) {
+    public Station getTransferStation(final Line lineIn, final Line lineOut) {
         for (Station station : lineIn.getListStation()) {
             if (station.getChangeLine() != null && station.getChangeLine().equals(lineOut)) {
                 return station;
@@ -34,7 +34,7 @@ public class Tickets {
                 + startStation.getName() + " до станции " + finalStation.getName());
     }
 
-    private int countStagesFromTo(Station startStation, Station finalStation) {
+    private int countStagesFromTo(Station startStation, final Station finalStation) {
         int count = 0;
         while (startStation.getNextStation() != null) {
             count++;
@@ -46,7 +46,7 @@ public class Tickets {
         return -1;
     }
 
-    private int countStagesToFrom(Station finalStation, Station startStation) {
+    private int countStagesToFrom(Station finalStation, final Station startStation) {
         int count = 0;
         while (finalStation.getLastStation() != null) {
             count++;
