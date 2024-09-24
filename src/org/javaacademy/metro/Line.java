@@ -1,7 +1,9 @@
 package org.javaacademy.metro;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * класс Линия
@@ -43,6 +45,46 @@ public class Line {
         }
         return color == line.color;
     }
+
+    public int getIndexStartStation(Station station) {
+        List<Station> stationList
+                = this.getStationSet().stream().toList();
+        return IntStream.rangeClosed(0, stationList.size())
+                .filter(i -> station.equals(stationList.get(i)))
+                .findFirst().getAsInt();
+    }
+
+    public int getCountSectionFromTo(Station station, int startIndex) {
+        int count = 1;
+        List<Station> stationList
+                = this.getStationSet().stream().toList();
+        Station stationItem = stationList.get(startIndex);
+        while (stationItem.getNext() != null) {
+            if (stationItem.getNext().equals(station)) {
+                return count;
+            }
+            stationItem = stationItem.getNext();
+            count++;
+        }
+        return -1;
+    }
+
+    public int getCountSectionToFrom(Station station, int startIndex) {
+        int count = 1;
+        List<Station> stationList
+                = this.getStationSet().stream().toList();
+        Station stationItem = stationList.get(startIndex);
+        while (stationItem.getPrev() != null) {
+            if (stationItem.getPrev().equals(station)) {
+                return count;
+            }
+            stationItem = stationItem.getPrev();
+            count++;
+        }
+        return -1;
+    }
+
+
 
     @Override
     public int hashCode() {

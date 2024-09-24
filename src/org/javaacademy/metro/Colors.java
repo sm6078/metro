@@ -4,23 +4,23 @@ package org.javaacademy.metro;
  * enum цвет линии
  */
 public enum Colors {
-    RED(1, "Красная"),
-    BLUE(2, "Синяя"),
-    GREEN(3, "Зеленая");
+    RED("Красная", "red"),
+    BLUE("Синяя", "blue"),
+    GREEN("Зеленая", "green");
 
-    private final int id;
     private final String color;
+    private final String translateColor;
 
-    Colors(int id, String color) {
-        this.id = id;
+    Colors(String color, String translateColor) {
         this.color = color;
-    }
-
-    public int getId() {
-        return id;
+        this.translateColor = translateColor;
     }
 
     public String getColor() {
         return color;
+    }
+
+    public String getTranslateColor() {
+        return translateColor;
     }
 }

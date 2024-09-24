@@ -79,6 +79,10 @@ public class Station {
         return transferStation;
     }
 
+    public void setTransferStation(Set<Station> transferStation) {
+        this.transferStation = transferStation;
+    }
+
     public Metro getMetro() {
         return metro;
     }
